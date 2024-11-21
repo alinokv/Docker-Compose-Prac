@@ -1,0 +1,14 @@
+<!-- user_created.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1>Пользователь создан успешно!</h1>
+{% comment %}        <p><strong>Имя:</strong> {{ user.first_name }}</p>
+        <p><strong>Фамилия:</strong> {{ user.last_name }}</p>{% endcomment %}
+        <p><strong>Логин:</strong> {{ username }}</p>
+        <p><strong>Пароль:</strong> {{ password }}</p>
+        <p><strong>Email:</strong> {{ email }}</p>
+        <a href="{% url 'admin_panel:create_user' %}" class="btn btn-primary">Создать еще одного пользователя</a>
+    </div>
+{% endblock %}

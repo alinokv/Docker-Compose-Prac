@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Восстановление базы данных</title>
+</head>
+<body>
+    <h1>Восстановление базы данных из бэкапа</h1>
+    <form action="{% url 'admin_panel:pg_recover' %}" method="post">
+        {% csrf_token %}
+        <label for="backup_dir">Введите путь к директории с бэкапом:</label>
+        <input type="text" id="backup_dir" name="backup_dir" required>
+        <button type="submit">Восстановить</button>
+    </form>
+</body>
+</html>

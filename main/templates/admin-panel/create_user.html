@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1>Создание нового пользователя</h1>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="first_name">Имя:</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" required>
+            </div>
+            <div class="form-group">
+                <label for="last_name">Фамилия:</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Роль:</label>
+                <select class="form-control" id="role" name="role" required>
+                    {% for role in roles %}
+                        <option value="{{ role.id }}">{{ role.role_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Создать пользователя</button>
+        </form>
+    </div>
+    
+{% endblock %}

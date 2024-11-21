@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container mt-5">
+        <h1>Список пользователей</h1>
+
+        <form method="GET" class="mb-3">
+            <input type="text" name="q" placeholder="Поиск..." class="form-control" value="{{ request.GET.q }}">
+            <button type="submit" class="btn btn-primary mt-2">Поиск</button>
+        </form>
+
+        <div class="mb-3">
+            {% for role in roles %}
+                <a href="?role={{ role }}" class="btn btn-secondary mr-2">{{ role }}</a>
+            {% endfor %}
+            <a href="?" class="btn btn-secondary">Сбросить фильтр</a>
+        </div>
+        <a href="{% url 'admin_panel:create_user' %}" class="btn btn-secondary mt-2 mb-2">Добавить нового пользователя</a>
+
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Юзернейм</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Роль</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for user in users %}
+                <tr {% if not user.is_active %}class="text-danger"{% endif %}>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>
+                        <button class="btn btn-info" data-toggle="modal" data-target="#userModal"
+                                data-username="{{ user.username }}" data-role="{{ user.role.role_name }}"
+                                data-user-id="{{ user.id }}">Изменить роль
+                        </button>
+                        {% if user.is_active %}
+                            <a href="{% url 'admin_panel:block_user' user.id %}" class="btn btn-warning">Заблокировать</a>
+                        {% else %}
+                            <a href="{% url 'admin_panel:unblock_user' user.id %}" class="btn btn-success">Разблокировать</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="userModalLabel">Изменение роли пользователя</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Юзернейм:</strong> <span id="modal-username"></span></p>
+                        <p><strong>Текущая роль:</strong> <span id="modal-role"></span></p>
+
+                        <form id="roleChangeForm" method="POST" action="{% url 'admin_panel:change_user_role' %}">
+                            {% csrf_token %}
+                            <input type="hidden" id="modal-user-id" name="user_id">
+                            <div class="form-group">
+                                <label for="roleSelect">Выберите новую роль:</label>
+                                <select class="form-control" id="roleSelect" name="role">
+                                    {% for role in roles %}
+                                        <option value="{{ role.id }}">{{ role.role_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сменить роль</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $('#userModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var username = button.data('username');
+            var role = button.data('role');
+            var userId = button.data('user-id');
+
+            var modal = $(this);
+            modal.find('#modal-username').text(username);
+            modal.find('#modal-role').text(role);
+            modal.find('#modal-user-id').val(userId);
+        });
+    </script>
+{% endblock %}
