@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block style %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1>Продукты</h1>
+        <button class="btn btn-success mb-3" data-toggle="modal" data-target="#createModal">Добавить продукт</button>
+
+        <form method="GET" class="mb-4">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name="q" placeholder="Поиск по имени продукта"
+                       value="{{ request.GET.q }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">Поиск</button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h5>Категории:</h5>
+                {% for category in categories %}
+                    <a href="?category={{ category.id }}&q={{ request.GET.q }}&brands={{ request.GET.brands|join:',' }}"
+                       class="btn btn-info btn-sm mr-2">{{ category.name }}</a>
+                {% endfor %}
+
+                <h5>Бренды:</h5>
+                {% for brand in brands %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="brands" value="{{ brand.id }}"
+                               id="brand{{ brand.id }}"
+                               {% if brand.id|stringformat:"s" in request.GET.brands %}checked{% endif %}>
+                        <label class="form-check-label" for="brand{{ brand.id }}">{{ brand.name }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-4">
+                <h5>Цена:</h5>
+                <div class="input-group">
+                    <input type="number" class="form-control" name="price_min" placeholder="От"
+                           value="{{ request.GET.price_min }}">
+                    <input type="number" class="form-control" name="price_max" placeholder="До"
+                           value="{{ request.GET.price_max }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-secondary">Применить фильтры</button>
+        </form>
+
+        <div class="row">
+            {% for product in object_list %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">
+                                <strong>Цена:</strong> {{ product.price }}<br>
+                                <strong>Артикул:</strong> {{ product.article }}<br>
+                                <strong>Бренд:</strong> {{ product.brand.name }}<br>
+                                <strong>Категория:</strong> {{ product.category.name }}<br>
+                                <strong>Количество:</strong> {{ product.quantity }}<br>
+                                <strong>Описание:</strong> {{ product.description }}<br>
+                            </p>
+                            <button class="btn btn-warning" data-toggle="modal"
+                                    data-target="#updateModal{{ product.id }}">Изменить
+                            </button>
+                            <button class="btn btn-danger" data-toggle="modal"
+                                    data-target="#deleteModal{{ product.id }}">Удалить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Модальное окно для изменения продукта -->
+                <div class="modal fade" id="updateModal{{ product.id }}" tabindex="-1" role="dialog"
+                     aria-labelledby="updateModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'manager_panel:product_update' product.id %}"
+                                  enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="updateModalLabel">Изменить продукт</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="text" name="name" class="form-control" value="{{ product.name }}"
+                                           required>
+                                    <input type="number" name="price" class="form-control mt-2"
+                                           value="{{ product.price }}" required>
+                                    <input type="text" name="article" class="form-control mt-2"
+                                           value="{{ product.article }}" readonly>
+                                    <input type="number" name="quantity" class="form-control mt-2"
+                                           value="{{ product.quantity }}" required>
+                                    <textarea name="description" class="form-control mt-2" placeholder="Описание"
+                                              required>{{ product.description }}</textarea>
+                                    <input type="file" name="image" class="form-control mt-2">
+                                    <select name="brand" class="form-control mt-2" required>
+                                        <option value="">Выберите бренд</option>
+                                        {% for brand in brands %}
+                                            <option value="{{ brand.id }}"
+                                                    {% if brand.id == product.brand.id %}selected{% endif %}>{{ brand.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <select name="category" class="form-control mt-2" required>
+                                        <option value="">Выберите категорию</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}"
+                                                    {% if category.id == product.category.id %}selected{% endif %}>{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Модальное окно для удаления продукта -->
+                <div class="modal fade" id="deleteModal{{ product.id }}" tabindex="-1" role="dialog"
+                     aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Удаление продукта</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                Вы уверены, что хотите удалить продукт "{{ product.name }}"?
+                            </div>
+                            <div class="modal-footer">
+                                <form method="post" action="{% url 'manager_panel:product_delete' product.id %}">
+                                    {% csrf_token %}
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Нет</button>
+                                    <button type="submit" class="btn btn-danger">Да, удалить</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-warning" role="alert">
+                        Продукты не найдены.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="pagination">
+            {% if is_paginated %}
+                <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                <nav>
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?q={{ request.GET.q }}&category={{ request.GET.category }}&brands={{ request.GET.brands|join:',' }}&page=1">Первая</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?q={{ request.GET.q }}&category={{ request.GET.category }}&brands={{ request.GET.brands|join:',' }}&page={{ page_obj.previous_page_number }}">Назад</a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_obj.number }}</span>
+                        </li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?q={{ request.GET.q }}&category={{ request.GET.category }}&brands={{ request.GET.brands|join:',' }}&page={{ page_obj.next_page_number }}">Вперед</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?q={{ request.GET.q }}&category={{ request.GET.category }}&brands={{ request.GET.brands|join:',' }}&page={{ page_obj.paginator.num_pages }}">Последняя</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления продукта -->
+    <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form method="post" action="{% url 'manager_panel:product_create' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createModalLabel">Добавить продукт</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" name="name" class="form-control" placeholder="Название продукта" required>
+                        <input type="number" name="price" class="form-control mt-2" placeholder="Цена" required>
+                        <input type="number" name="quantity" class="form-control mt-2" placeholder="Количество"
+                               required>
+                        <textarea name="description" class="form-control mt-2" placeholder="Описание"
+                                  required></textarea>
+                        <input type="file" name="image" class="form-control mt-2">
+                        <select name="brand" class="form-control mt-2" required>
+                            <option value="">Выберите бренд</option>
+                            {% for brand in brands %}
+                                <option value="{{ brand.id }}">{{ brand.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <select name="category" class="form-control mt-2" required>
+                            <option value="">Выберите категорию</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

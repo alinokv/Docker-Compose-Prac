@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Бренды</h1>
+
+    <form method="get" class="form-inline mb-3">
+        <input type="text" name="q" class="form-control" placeholder="Поиск по имени бренда" value="{{ request.GET.q }}">
+        <button type="submit" class="btn btn-primary ml-2">Поиск</button>
+    </form>
+
+    <button class="btn btn-success mb-3" data-toggle="modal" data-target="#createModal">Добавить брэнд</button>
+
+    <ul class="list-group mb-3">
+        {% for brand in object_list %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ brand.name }}
+                <div>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#updateModal{{ brand.id }}">Изменить</button>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal{{ brand.id }}">Удалить</button>
+                </div>
+            </li>
+
+            <!-- Модальное окно для изменения бренда -->
+            <div class="modal fade" id="updateModal{{ brand.id }}" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form method="post" action="{% url 'manager_panel:brand_update' brand.id %}">
+                            {% csrf_token %}
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="updateModalLabel">Изменить брэнд</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="text" name="name" class="form-control" value="{{ brand.name }}">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Модальное окно для удаления бренда -->
+            <div class="modal fade" id="deleteModal{{ brand.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Удаление брэнда</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Вы уверены, что хотите удалить брэнд "{{ brand.name }}"?
+                        </div>
+                        <div class="modal-footer">
+                            <form method="post" action="{% url 'manager_panel:brand_delete' brand.id %}">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Нет</button>
+                                <button type="submit" class="btn btn-danger">Да, удалить</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <li class="list-group-item">Бренды не найдены.</li>
+        {% endfor %}
+    </ul>
+
+    <div class="pagination">
+        {% if is_paginated %}
+            <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+            <div>
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ request.GET.q }}&page=1" class="btn btn-link">Первая</a>
+                    <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}" class="btn btn-link">Назад</a>
+                {% endif %}
+                <span>Страница {{ page_obj.number }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}" class="btn btn-link">Вперед</a>
+                    <a href="?q={{ request.GET.q }}&page={{ page_obj.paginator.num_pages }}" class="btn btn-link">Последняя</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Модальное окно для добавления бренда -->
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" action="{% url 'manager_panel:brand_create' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel">Добавить брэнд</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="name" class="form-control" placeholder="Название брэнда">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

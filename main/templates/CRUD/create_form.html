@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    
+    <div class="container mt-5">
+        <h1>Создание продукта</h1>
+        <form method="post" enctype="multipart/form-data" class="mb-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary" type="submit">Создать продукт</button>
+        </form>
+    </div>
+
+{% endblock %}
