@@ -19,17 +19,20 @@ from users.models import User, Role
 from django.db.models import Q
 import csv
 
+
 def block_user_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.is_active = False
     user.save()
     return redirect('admin-panel:user_list')
 
+
 def unblock_user_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.is_active = True
     user.save()
     return redirect('admin-panel:user_list')
+
 
 class UserListView(ListView):
     model = User
@@ -73,19 +76,24 @@ def change_user_role(request):
     user.save()
 
     with open('logs.log', 'a') as f:
-        f.write(f"{datetime.now()} - {request.method} {request.path} Пользователь - {user.username} роль изменена на {user.role}\n")
+        f.write(
+            f"{datetime.now()} - {request.method} {request.path} Пользователь - {user.username} роль изменена на {user.role}\n")
 
     return redirect('admin-panel:user_list')
 
+
 def system_settings(request):
     context = {}
-    return render(request, 'admin-panel/system_settings_page.html', context = context)
+    return render(request, 'admin-panel/system_settings_page.html', context=context)
+
 
 def generate_username():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
+
 def generate_password():
     return ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=12))
+
 
 def create_user_view(request):
     if request.method == 'POST':
@@ -97,7 +105,8 @@ def create_user_view(request):
         role_id = request.POST.get('role')
 
         role = get_object_or_404(Role, id=role_id)
-        user = User(username=username, first_name=first_name, last_name=last_name, email=email, role=role)  # Добавляем email
+        user = User(username=username, first_name=first_name, last_name=last_name, email=email,
+                    role=role)  # Добавляем email
         user.password = make_password(password)  # Хешируем пароль
         user.save()
 
@@ -124,6 +133,7 @@ def create_user_view(request):
     roles = Role.objects.all()
     return render(request, 'admin-panel/create_user.html', {'roles': roles})
 
+
 def create_backup(request):
     os.system(f'python manage.py dumpdata > {settings.BASE_DIR}/backup.json')
     with open(f'{settings.BASE_DIR}\\backup.json', 'r', encoding='windows-1254') as file:
@@ -134,12 +144,14 @@ def create_backup(request):
 
 def pg_backup(request):
     # os.system(f'python manage.py dumpdata > {settings.BASE_DIR}/backup.json')
-    os.system(f'/Applications/pgAdmin\ 4.app/Contents/SharedSupport/pg_dump --file "{settings.BASE_DIR}/backups/backup-pg4-{datetime.now()}" --host "localhost" --port "5432" --username "postgres" --no-password --format=d --verbose "TestBase"')
+    os.system(
+        f'/Applications/pgAdmin\ 4.app/Contents/SharedSupport/pg_dump --file "{settings.BASE_DIR}/backups/backup-pg4-{datetime.now()}" --host "localhost" --port "5432" --username "postgres" --no-password --format=d --verbose "New"')
     # with open(f'{settings.BASE_DIR}\\backup.json', 'r', encoding='windows-1254') as file:
     #     response = HttpResponse(file.read(), content_type='application/json')
     #     response['Content-Disposition'] = 'attachment; filename=backup.json'
     #     return response
     return HttpResponse("резервная копия создана")
+
 
 @csrf_exempt
 def pg_recover(request):
@@ -157,15 +169,15 @@ def pg_recover(request):
         backup_file_path = os.path.join(backup_dir, backup_files[0])
 
         command = [
-            '/Applications/pgAdmin 4.app/Contents/SharedSupport/pg_restore',
-            '--host', 'localhost',
-            '--port', '5432',
-            '--username', 'postgres',
-            '--no-password',
-            '--dbname', 'TestBase',
-            '--format', 'd',
-            '--verbose',
-            backup_file_path
+        '/Applications/pgAdmin 4.app/Contents/SharedSupport/pg_restore',
+        '--host', 'localhost',
+        '--port', '5432',
+        '--username', 'postgres',
+        '--no-password',
+        '--dbname', 'TestBase',
+        '--format', 'd',
+        '--verbose',
+        backup_file_path
         ]
 
         try:
@@ -198,4 +210,3 @@ def open_log_file(request):
             return response
     else:
         return HttpResponse("Log file not found.", status=404)
-

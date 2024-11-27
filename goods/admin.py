@@ -28,6 +28,7 @@ class ProductsAdmin(admin.ModelAdmin):
         "article",
         ("price", "discount"),
         "quantity",
+        "brand",
     ]
 
 admin.site.register(Brand)

@@ -1,16 +1,21 @@
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.views.generic import DetailView, ListView
 
-from goods.models import Products
 from goods.utils import q_search
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import Review, Products
+from .forms import ReviewForm
+
+from django.shortcuts import render, get_object_or_404, redirect
 
 
 class CatalogView(ListView):
     model = Products
     # queryset = Products.objects.all().order_by("-id")
-    template_name = "goods/catalog.html"
+    template_name = "index-1.html"
     context_object_name = "goods"
-    paginate_by = 3
+    paginate_by = 20
     allow_empty = False
     # чтоб удобно передать в методы
     slug_url_kwarg = "category_slug"
@@ -37,40 +42,98 @@ class CatalogView(ListView):
             goods = goods.order_by(order_by)
 
         return goods
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["title"] = "Home - Каталог"
         context["slug_url"] = self.kwargs.get(self.slug_url_kwarg)
         return context
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class ProductView(DetailView):
-
-    # model = Products
-    # slug_field = "slug"
     template_name = "goods/product.html"
     slug_url_kwarg = "product_slug"
     context_object_name = "product"
 
     def get_object(self, queryset=None):
-        product = Products.objects.get(slug=self.kwargs.get(self.slug_url_kwarg))
-        return product
-    
+        return Products.objects.get(slug=self.kwargs.get(self.slug_url_kwarg))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = self.object.name
+        reviews = Review.objects.filter(product=self.object).select_related("user")
+        user_reviews = reviews.filter(user=self.request.user) if self.request.user.is_authenticated else None
+
+        sort_by = self.request.GET.get('sort_by', 'newest')  # Фильтрация отзывов
+        if sort_by == 'newest':
+            reviews = reviews.order_by('-review_date')
+        elif sort_by == 'rating_desc':
+            reviews = reviews.order_by('-rating')
+        elif sort_by == 'rating_asc':
+            reviews = reviews.order_by('rating')
+        elif sort_by == 'my_reviews' and user_reviews is not None:
+            reviews = user_reviews
+
+        context["reviews"] = reviews
+        context["user_reviews"] = user_reviews
+        context["sort_by"] = sort_by
         return context
 
 
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    if request.method == "POST":
+        review.delete()
+        return JsonResponse({"success": True}, status=200)
+    return JsonResponse({"success": False}, status=400)
+
+
+@login_required
+def update_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    if request.method == "POST":
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"success": True}, status=200)
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+    return JsonResponse({"success": False}, status=400)
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.product = product
+            review.save()
+            return JsonResponse({"success": True}, status=201)
+        else:
+            return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    else:
+        form = ReviewForm()
+    return render(request, "add_review.html", {"form": form, "product": product})
+
+
+
+
+
+def product_detail(request, product_slug):
+    # Получаем продукт по slug или возвращаем 404, если не найден
+    product = get_object_or_404(Products, slug=product_slug)
+    return render(request, 'product_detail.html', {'product': product})
 # def catalog(request, category_slug=None):
 
 #     page = request.GET.get('page', 1)
 #     on_sale = request.GET.get('on_sale', None)
 #     order_by = request.GET.get('order_by', None)
 #     query = request.GET.get('q', None)
-    
+
 #     if category_slug == "all":
 #         goods = Products.objects.all()
 #     elif query:

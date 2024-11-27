@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'carts',
     'orders',
     'admin_panel',
-    'manager_panel'
+    'manager_panel',
+    'review',
 ]
 
 MIDDLEWARE = [
@@ -91,10 +92,9 @@ WSGI_APPLICATION = 'app.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        # 'NAME': 'KorShopDatabase',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'New',
-        'HOST': 'localhost',
+        'HOST': 'postgres',
         'PORT': '5432',
         'USER': 'postgres',
         'PASSWORD': '123',

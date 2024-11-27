@@ -1,0 +1,225 @@
+{% load static %}
+
+<div class="test d-flex flex-row justify-content-start flex-wrap gap-3">
+    {% for review in reviews %}
+        <div class="review-card">
+            <div class="d-flex justify-content-start align-items-start p-3 ms-4">
+                <img src="
+
+
+
+                        {% if review.user.image %}{{ review.user.image.url }}{% else %}{% static 'deps/images/baseavatar.jpg' %}{% endif %}"
+                     alt="Profile Picture">
+                <div class="ps-3">
+                    <div class="d-flex justify-content-start align-items-center">
+                        <div class="me-4">
+                            <p class="mb-0 mont-reg name-item">{{ review.user.username }}</p>
+                            <p class="mont-bold">{{ review.review_date|date:"d M Y" }}</p>
+                        </div>
+                        <div class="product-rating ms-5">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% elif forloop.counter == review.rating|add:0.5 %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <p>{{ review.comment }}</p>
+                </div>
+
+            </div>
+            {% if review.user == request.user %}
+                <div class="d-flex justify-content-end mt-4 me-4">
+                    <button class="transparent-btn ms-2" data-bs-toggle="modal"
+                            data-bs-target="#updateReviewModal-{{ review.id }}">✏️
+                    </button>
+                    <button class="transparent-btn ms-2" data-bs-toggle="modal"
+                            data-bs-target="#deleteReviewModal-{{ review.id }}">🗑
+                    </button>
+                </div>
+
+
+                <div class="modal" id="updateReviewModal-{{ review.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'goods:update_review' review.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Изменить отзыв</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Закрыть"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="rating d-flex justify-content-evenly mb-3">
+                                        {% for star in "12345" %}
+                                            <i class="fas fa-star star-rating {% if forloop.counter <= review.rating %}text-warning{% else %}far{% endif %}"
+                                               data-value="{{ forloop.counter }}"
+                                               data-target="ratingInput-{{ review.id }}"></i>
+                                        {% endfor %}
+                                        <input type="hidden" name="rating" id="ratingInput-{{ review.id }}"
+                                               value="{{ review.rating }}">
+                                    </div>
+                                    <textarea name="comment"
+                                              class="form-control">{{ review.comment }}</textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Модальное окно для подтверждения удаления -->
+                <div class="modal" id="deleteReviewModal-{{ review.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'goods:delete_review' review.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Удалить отзыв</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Закрыть"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Вы уверены, что хотите удалить этот отзыв?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-danger">Удалить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            {% endif %}
+        </div>
+
+    {% empty %}
+        <p>Пока нет отзывов на этот продукт. Будьте первым!</p>
+    {% endfor %}
+</div>
+
+<style>
+    .name-item {
+        font-size: 15px;
+    }
+
+    .review-card {
+        height: 250px;
+        width: 450px;
+        background-color: rgba(128, 128, 128, 0.068);
+        border-radius: 20px;
+    }
+
+    .review-card img {
+        height: 70px;
+        width: 70px;
+        border-radius: 50%;
+        box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .transparent-btn {
+        background-color: transparent; /* Убирает фон */
+        border: none; /* Убирает рамку */
+        color: inherit; /* Наследует цвет текста от родителя */
+        padding: 0; /* Убирает внутренние отступы */
+        font: inherit; /* Наследует шрифт от родителя */
+        cursor: pointer; /* Указывает, что это кнопка */
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const deleteForms = document.querySelectorAll("form[action*='delete']");
+        const updateForms = document.querySelectorAll("form[action*='update']");
+
+        deleteForms.forEach(form => {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                fetch(this.action, {
+                    method: "POST",
+                    headers: {"X-CSRFToken": "{{ csrf_token }}"}
+                }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            {#alert("Отзыв удален");#}
+                            location.reload();
+                        } else {
+                            alert("Ошибка при удалении");
+                        }
+                    });
+            });
+        });
+
+        updateForms.forEach(form => {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                fetch(this.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {"X-CSRFToken": "{{ csrf_token }}"}
+                }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            {#alert("Отзыв изменен");#}
+                            location.reload();
+                        } else {
+                            alert("Ошибка при изменении");
+                        }
+                    });
+            });
+        });
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Обработчики звезд для изменения рейтинга
+        const stars = document.querySelectorAll(".star-rating");
+        stars.forEach(star => {
+            // Подсветка звезд при наведении
+            star.addEventListener("mouseover", function () {
+                const ratingInputId = this.getAttribute("data-target");
+                highlightStars(this.getAttribute("data-value"), ratingInputId);
+            });
+
+            // Установка рейтинга при клике
+            star.addEventListener("click", function () {
+                const ratingInputId = this.getAttribute("data-target");
+                const ratingInput = document.getElementById(ratingInputId);
+                const selectedRating = this.getAttribute("data-value");
+                ratingInput.value = selectedRating;
+                highlightStars(selectedRating, ratingInputId); // Закрепляем подсветку
+            });
+
+            // Убираем подсветку, если звезда не закреплена
+            star.addEventListener("mouseleave", function () {
+                const ratingInputId = this.getAttribute("data-target");
+                const ratingInput = document.getElementById(ratingInputId);
+                highlightStars(ratingInput.value, ratingInputId);
+            });
+        });
+
+        // Функция подсветки звезд до указанного рейтинга
+        function highlightStars(rating, inputId) {
+            const starsGroup = document.querySelectorAll(`[data-target="${inputId}"]`);
+            starsGroup.forEach(star => {
+                if (star.getAttribute("data-value") <= rating) {
+                    star.classList.add("text-warning", "fas");
+                    star.classList.remove("far");
+                } else {
+                    star.classList.remove("text-warning", "fas");
+                    star.classList.add("far");
+                }
+            });
+        }
+    });
+</script>

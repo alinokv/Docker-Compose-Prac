@@ -2,18 +2,29 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
-from goods.models import Categories
+from goods.models import Categories, Products
 
 
+# class IndexView(TemplateView):
+#     template_name = 'main/g.html'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['title'] = 'Home - Главная'
+#         context['content'] = "Магазин мебели HOME"
+#         return context
+#
 
-class IndexView(TemplateView):
-    template_name = 'main/index.html'
+def home(request):
+    random_products = Products.objects.order_by('?')[:4]  # 4 случайных товара
+    featured_products = Products.objects.order_by('?')[:8]  # 8 случайных товаров
+    random_categories = Categories.objects.order_by('?')[:4]  # 4 случайные категории
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Home - Главная'
-        context['content'] = "Магазин мебели HOME"
-        return context
+    return render(request, 'main/index.html', {
+        'random_products': random_products,
+        'featured_products': featured_products,
+        'random_categories': random_categories,
+    })
 
 
 class AboutView(TemplateView):
@@ -34,7 +45,7 @@ class AboutView(TemplateView):
 #         'content': "Магазин мебели HOME",
 #     }
 
-#     return render(request, 'main/index.html', context)
+#     return render(request, 'main/g.html', context)
 
 
 # def about(request):

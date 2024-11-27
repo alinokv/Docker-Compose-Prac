@@ -1,0 +1,142 @@
+.site-name {
+  font-family: 'Montserrat-Black', sans-serif;
+}
+
+.links-name {
+  font-family: 'Montserrat-SemiBold', sans-serif;
+  font-size: 20px;
+}
+
+.mont-bold {
+  font-family: 'Montserrat-Bold';
+}
+
+.mont-thin {
+  font-family: 'Montserrat-Thin';
+}
+
+.mont-bold a {
+  text-decoration: none;
+  color: #000;
+}
+
+li {
+  list-style-type: none;
+}
+
+/*.new-coll {*/
+/*  text-shadow: inset 0 4px 4px 0 rgba(128, 66, 73, 0.2), 0 4px 4px 0 rgba(128, 105, 98, 0.42);*/
+/*  color: aliceblue;*/
+/*}*/
+
+/*.site-name .text-with-shadows {*/
+/*  color: white;*/
+/*  text-shadow: inset 0 4px 4px 0 rgba(128, 66, 73, 0.2), 0 4px 4px 0 rgba(128, 105, 98, 0.42);*/
+/*}*/
+
+.carousel-item {
+  height: 500px;
+}
+
+.carousel-item img {
+  object-fit: cover;
+  height: 100%;
+}
+
+.carousel-caption {
+  right: 0%;
+  left: 50%;
+  /*padding-bottom: 30px;*/
+  bottom: 30%;
+}
+
+.carousel-caption h5 {
+  color: #333;
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.carousel-caption p {
+  color: #666;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.carousel-caption .btn-lightpink {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.custom-button {
+  background-color: #FFC2D3;
+  color: #333;
+  padding: 5px 30px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 0 0 20px 0;
+  font-family: "Montserrat-ExtraLight";
+  font-weight: 200;
+  font-size: 18px;
+  text-align: center;
+}
+
+.labels {
+  font-family: "Montserrat-Medium";
+  /*font-size: 20px;*/
+  margin-top: 40px;
+  margin-bottom: 40px;
+  text-align: left;
+  margin-left: 40px;
+}
+
+.card {
+  width: 250px;
+  height: 350px;
+  /*background: rgba(254, 174, 174, 0.722);*/
+  font-family: 'Montserrat-Bold', sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  border: 0;
+}
+
+.card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.info {
+  text-align: left;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.title {
+  margin-bottom: 4px;
+  font-size: 18px;
+  font-family: 'Montserrat-ExtraLight';
+}
+
+.subtitle {
+  margin-top: 0;
+  font-size: 14px;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  font-size: 24px;
+  font-family: 'Montserrat-ExtraLight';
+}
+
+.price span:last-child {
+  font-size: 16px;
+  margin-left: 4px;
+}
+

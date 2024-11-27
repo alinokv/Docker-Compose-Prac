@@ -29,6 +29,9 @@ urlpatterns = [
     path('orders/', include('orders.urls', namespace='orders')),
     path('', include('admin_panel.routing', namespace='admin-panel')),
     path('', include('manager_panel.routing', namespace='manager-panel')),
+
+    path('', include('review.routing', namespace='reviews')),
+
 ]
 
 if settings.DEBUG:

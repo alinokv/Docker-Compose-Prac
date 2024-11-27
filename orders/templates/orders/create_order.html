@@ -1,103 +1,113 @@
 {% extends "base.html" %}
 {% load static %}
 {% load carts_tags %}
-
+{% block css %}
+    <link href="{% static 'deps/css/produtdetail_style.css' %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
-<div class=" bg-white p-4 mb-4 mx-2 rounded custom-shadow">
-    <div class="container">
-        <h3 class="text-center mb-4">Выбранные товары</h3>
-        <div class="container" id="cart-items-container">
-            <!-- Разметка корзины -->
-            {% user_carts request as carts %}
-
-            {% include "carts/includes/included_cart.html" %}
-            <!-- Закончилась разметка корзины -->
+    <div class="bg-white p-4 mb-4 mx-2 rounded custom-shadow">
+        <div class="container">
+            <h3 class="text-center mb-4 mont-bold">выбранные товары</h3>
+            <div class="container" id="cart-items-container">
+                {% user_carts request as carts %}
+                {% include "carts/includes/included_cart.html" %}
+            </div>
         </div>
-    </div>
-    <!-- Детали заказа -->
-    <div class="container">
-        <h3 class="text-center">Детали заказа</h3>
-        <div class="card mb-3">
-            <div class="card-body">
-                <form action="{% url "orders:create_order" %}" method="post" id="create_order_form">
+
+        <div class="container">
+            <h3 class="text-center mont-bold">Детали заказа</h3>
+            <div class="mb-3">
+                <form action="{% url 'orders:create_order' %}" method="post" id="create_order_form">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="id_first_name" class="form-label">Имя*:</label>
+                            <label for="id_first_name" class="form-label mont-reg fs-5">имя*:</label>
                             <input type="text" class="form-control" id="id_first_name"
-                                value="{% if form.first_name.value %}{{ form.first_name.value }}{% endif %}"
-                                name="first_name" required>
+                                   value="{{ form.first_name.value }}" name="first_name" required>
                             {% if form.first_name.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.first_name.errors}}</div>
+                                <div class="alert alert-danger">{{ form.first_name.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="id_last_name" class="form-label">Фамилия*:</label>
+                            <label for="id_last_name" class="form-label mont-reg fs-5">фамилия*:</label>
                             <input type="text" class="form-control" id="id_last_name" name="last_name"
-                            value="{% if form.last_name.value %}{{ form.last_name.value }}{% endif %}"
-                            required>
+                                   value="{{ form.last_name.value }}" required>
                             {% if form.last_name.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.last_name.errors}}</div>
+                                <div class="alert alert-danger">{{ form.last_name.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="id_phone_number" class="form-label">Номер телефона*:</label>
+                            <label for="id_phone_number" class="form-label mont-reg fs-5">номер телефона*:</label>
                             <input type="text" class="form-control" id="id_phone_number" name="phone_number"
-                                value="{% if form.phone_number.value %}{{ form.phone_number.value }}{% endif %}"
-                                placeholder="(000) 000-0000"
-                                required>
-                            {% if form.phone_number.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.phone_number.errors}}</div>
-                            {% endif %}
-                            <div class="alert alert-danger alert-dismissible fade show" style="display: none" id="phone_number_error">Неверный формат номера</div>
+                                   value="{{ form.phone_number.value }}" placeholder="(000) 000-0000" required>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label for="delivery" class="form-label">Способ доставки: </label>
+                            <label class="form-label mont-reg fs-5">способ доставки:</label>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="requires_delivery"
-                                    id="id_requires_delivery" value="1" checked>
-                                <label class="form-check-label" for="id_requires_delivery">Нужна
-                                    доставка</label>
+                                       id="id_requires_delivery" value="1" checked>
+                                <label class="form-check-label" for="id_requires_delivery">нужна доставка</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="requires_delivery"
-                                    id="id_requires_delivery" value="0">
-                                <label class="form-check-label" for="id_requires_delivery">Самовывоз</label>
+                                       id="id_no_delivery" value="0">
+                                <label class="form-check-label" for="id_no_delivery">самовывоз</label>
                             </div>
                         </div>
                         <div class="mb-3" id="deliveryAddressField">
-                            <label for="id_delivery_address" class="form-label">Адрес
-                                доставки*:</label>
-                            <textarea class="form-control" id="id_delivery_address"
-                                value="{% if form.delivery_address.value %}{{ form.delivery_address.value }}{% endif %}"
-                                name="delivery_address" rows="2"></textarea>
-                            {% if form.delivery_address.errors %}
-                                <div class="alert alert-danger alert-dismissible fade show">{{form.delivery_address.errors}}</div>
-                            {% endif %}
+                            <label for="id_delivery_address" class="form-label mont-reg fs-5">адрес доставки*:</label>
+                            <select class="form-control" id="id_delivery_address" name="delivery_address">
+                                <option value="">выберите адрес</option>
+                                {% for address in request.user.address_set.all %}
+                                    <option value="{{ address.id }}">{{ address }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Способ оплаты: </label>
+                            <label class="form-label mont-reg fs-5">способ оплаты:</label>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="payment_on_get"
-                                    id="id_payment_on_get" value="0" checked>
-                                <label class="form-check-label" for="id_payment_on_get">Оплата
-                                    картой</label>
+                                       id="id_payment_on_get_card" value="0" checked>
+                                <label class="form-check-label" for="id_payment_on_get_card">оплата картой</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="payment_on_get"
-                                    id="id_payment_on_get" value="1">
-                                <label class="form-check-label" for="id_payment_on_get">Наличными/картой
-                                    при плучении</label>
-                                {% if form.payment_on_get.errors %}
-                                    <div class="alert alert-danger alert-dismissible fade show">{{form.payment_on_get.errors}}</div>
-                                {% endif %}
+                                       id="id_payment_on_get_cash" value="1">
+                                <label class="form-check-label" for="id_payment_on_get_cash">наличными</label>
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-dark">Оформить заказ</button>
+                    <button type="submit" class="btn-buy">оформить заказ</button>
                 </form>
             </div>
         </div>
     </div>
-</div>
-{% endblock  %}
+
+    <!-- Модальное окно -->
+    <div class="modal fade" id="stockErrorModal" tabindex="-1" aria-labelledby="stockErrorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stockErrorModalLabel">Ошибка</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="stockErrorMessage"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const stockErrorMessage = "{{ request.session.stock_error_message|escapejs }}";
+            if (stockErrorMessage) {
+                const modal = new bootstrap.Modal(document.getElementById('stockErrorModal'));
+                document.getElementById('stockErrorMessage').innerText = stockErrorMessage;
+                modal.show();
+                fetch("{% url 'orders:clear_stock_error' %}", { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } });
+            }
+        });
+    </script>
+{% endblock %}

@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Восстановление базы данных из бэкапа</h1>
-    <form action="{% url 'admin_panel:pg_recover' %}" method="post">
+    <form action="{% url 'admin_panel:recoverbackup' %}" method="post">
         {% csrf_token %}
         <label for="backup_dir">Введите путь к директории с бэкапом:</label>
         <input type="text" id="backup_dir" name="backup_dir" required>

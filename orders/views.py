@@ -5,12 +5,13 @@ from django.db import transaction
 from django.forms import ValidationError
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
 
 from carts.models import Cart
-
 from orders.forms import CreateOrderForm
-from orders.models import Order, OrderItem
+from orders.models import Order, OrderItem, Address
 
 
 class CreateOrderView(LoginRequiredMixin, FormView):
@@ -31,25 +32,39 @@ class CreateOrderView(LoginRequiredMixin, FormView):
                 cart_items = Cart.objects.filter(user=user)
 
                 if cart_items.exists():
-                    # Создать заказ
+                    requires_delivery = form.cleaned_data['requires_delivery'] == "1"
+                    delivery_address_id = form.cleaned_data.get('delivery_address')
+
+                    delivery_address = None
+                    if requires_delivery:
+                        if not delivery_address_id:
+                            messages.error(self.request, 'При доставке необходимо указать адрес.')
+                            return redirect('orders:create_order')
+                        try:
+                            delivery_address = Address.objects.get(id=delivery_address_id, user=user)
+                        except Address.DoesNotExist:
+                            messages.error(self.request, 'Выбранный адрес доставки не существует.')
+                            return redirect('orders:create_order')
+
                     order = Order.objects.create(
                         user=user,
                         phone_number=form.cleaned_data['phone_number'],
-                        requires_delivery=form.cleaned_data['requires_delivery'],
-                        delivery_address=form.cleaned_data['delivery_address'],
-                        payment_on_get=form.cleaned_data['payment_on_get'],
+                        requires_delivery=requires_delivery,
+                        delivery_address=delivery_address,
+                        payment_on_get=form.cleaned_data['payment_on_get'] == "1",
                     )
-                    # Создать заказанные товары
-                    for cart_item in cart_items:
-                        product=cart_item.product
-                        name=cart_item.product.name
-                        price=cart_item.product.sell_price()
-                        quantity=cart_item.quantity
 
+                    for cart_item in cart_items:
+                        product = cart_item.product
+                        name = cart_item.product.name
+                        price = cart_item.product.sell_price()
+                        quantity = cart_item.quantity
 
                         if product.quantity < quantity:
-                            raise ValidationError(f'Недостаточное количество товара {name} на складе\
-                                                       В наличии - {product.quantity}')
+                            self.request.session['stock_error_message'] = (
+                                f'Недостаточное количество товара {name} на складе. В наличии: {product.quantity}.'
+                            )
+                            return redirect('orders:create_order')
 
                         OrderItem.objects.create(
                             order=order,
@@ -61,26 +76,22 @@ class CreateOrderView(LoginRequiredMixin, FormView):
                         product.quantity -= quantity
                         product.save()
 
-                    # Очистить корзину пользователя после создания заказа
                     cart_items.delete()
-
                     messages.success(self.request, 'Заказ оформлен!')
-                    return redirect('user:profile')
+                    return redirect('users:profile')
         except ValidationError as e:
-            messages.success(self.request, str(e))
+            messages.error(self.request, str(e))
             return redirect('orders:create_order')
-        
-    
-    def form_invalid(self, form):
-        messages.error(self.request, 'Заполните все обязательные поля!')
-        return redirect('orders:create_order')
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Оформление заказа'
-        context['order'] = True
-        return context
+        except Address.DoesNotExist:
+            messages.error(self.request, 'Выбранный адрес доставки не существует.')
+            return redirect('orders:create_order')
 
+
+@csrf_exempt
+def clear_stock_error(request):
+    if request.method == 'POST' and 'stock_error_message' in request.session:
+        del request.session['stock_error_message']
+    return JsonResponse({'status': 'success'})
 
 
 # @login_required

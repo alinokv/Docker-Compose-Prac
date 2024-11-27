@@ -1,0 +1,15 @@
+{% for review in reviews %}
+<div class="review-card">
+    <p><strong>Рейтинг:</strong> {{ review.rating }}</p>
+    <p><strong>Комментарий:</strong> {{ review.comment }}</p>
+    <div>
+        <a href="{% url 'goods:edit_review' review.id %}" class="btn btn-warning">Редактировать</a>
+        <form action="{% url 'goods:delete_review' review.id %}" method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+    </div>
+</div>
+{% empty %}
+<p>У вас пока нет отзывов для этого товара.</p>
+{% endfor %}

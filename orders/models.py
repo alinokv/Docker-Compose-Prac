@@ -14,12 +14,44 @@ class OrderitemQueryset(models.QuerySet):
             return sum(cart.quantity for cart in self)
         return 0
 
+
+
+class Address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    street = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    # country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    house_number = models.CharField(max_length=10)
+
+    def __str__(self):
+        return f'{self.street}, {self.city}'
+
+
+class Status(models.Model):
+    STATUS_CHOICES =(
+        ('В обработке', 'В обработке'),
+        ('В пути', 'В пути'),
+        ('Доставлено', 'Доставлено')
+    )
+    name = models.CharField(max_length=100, choices=STATUS_CHOICES)
+
+    def __str__(self):
+        return self.name
+
+class DeliveryType(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 class Order(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.SET_DEFAULT, blank=True, null=True, verbose_name="Пользователь", default=None)
     created_timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания заказа")
     phone_number = models.CharField(max_length=20, verbose_name="Номер телефона")
     requires_delivery = models.BooleanField(default=False, verbose_name="Требуется доставка")
-    delivery_address = models.TextField(null=True, blank=True, verbose_name="Адрес доставки")
+    delivery_address = models.ForeignKey(Address, null=True, blank=True, verbose_name="Адрес доставки", on_delete=models.CASCADE)
     payment_on_get = models.BooleanField(default=False, verbose_name="Оплата при получении")
     is_paid = models.BooleanField(default=False, verbose_name="Оплачено")
     status = models.CharField(max_length=50, default='В обработке', verbose_name="Статус заказа")

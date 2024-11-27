@@ -26,6 +26,8 @@ class Brand(models.Model):
         return self.name
 
 
+from django.db.models import Avg, Count
+
 class Products(models.Model):
     name = models.CharField(max_length=150, unique=True, verbose_name='Название')
     slug = models.SlugField(max_length=200, unique=True, blank=True, null=True, verbose_name='URL')
@@ -38,6 +40,23 @@ class Products(models.Model):
     category = models.ForeignKey(to=Categories, on_delete=models.CASCADE, verbose_name='Категория')
     article = models.CharField(max_length=50)
 
+    # Функция для расчета средней оценки продукта
+    def average_rating(self):
+        avg_rating = self.review_set.aggregate(Avg('rating'))['rating__avg']
+        return round(avg_rating, 2) if avg_rating else 0
+
+    # Функция для подсчета количества отзывов
+    def review_count(self):
+        return self.review_set.aggregate(Count('id'))['id__count']
+
+    # Функция для расчета процента рекомендаций
+    def recommendation_percentage(self):
+        reviews = self.review_set.all()
+        if not reviews.exists():
+            return 0
+        recommended_count = reviews.filter(rating__gte=4).count()  # Рекомендация: рейтинг >= 4
+        total_reviews = reviews.count()
+        return round((recommended_count / total_reviews) * 100, 2)
 
     class Meta:
         db_table = 'product'
@@ -50,16 +69,13 @@ class Products(models.Model):
 
     def get_absolute_url(self):
         return reverse("catalog:product", kwargs={"product_slug": self.slug})
-    
 
     def display_id(self):
         return f"{self.id:05}"
 
-
     def sell_price(self):
         if self.discount:
-            return round(self.price - self.price*self.discount/100, 2)
-        
+            return round(self.price - self.price * self.discount / 100, 2)
         return self.price
 
 

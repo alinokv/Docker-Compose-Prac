@@ -1,0 +1,118 @@
+.marquee {
+    width: 100%;
+    height: 50px;
+    overflow: hidden;
+    position: relative;
+    color: black;
+    font-size: 18px;
+    line-height: 50px;
+    white-space: nowrap;
+    animation: marquee 18s linear infinite;
+    display: flex;
+    font-family: 'Montserrat-Light';
+    justify-content: center;
+  }
+
+  /* @keyframes marquee {
+    0% { left: 100%; }
+    100% { left: -100%; }
+  } */
+
+  .promote{
+    background-color: #EBC3D4;
+  }
+
+  .d-flex .align-items-center a {
+    font-family: 'Montserrat-Light';
+  }
+
+  .product-pic img{
+    width: 450px;
+    border-radius: 5%;
+  }
+
+  .product-desc{
+    font-family: 'Inter';
+    font-size: 18px;
+    margin-right: 100px;
+
+  }
+
+  .btn-buy{
+     border-radius: 30px;
+     padding: 5px;
+     padding-left: 40px;
+     padding-right: 40px;
+     font-size: 20px;
+     cursor: pointer;
+     background-color: black;
+     color: whitesmoke;
+     border: 2px solid transparent; /* Обводка по умолчанию */
+     transition: all 0.3s ease; /* Плавный переход */
+  }
+  .btn-buy:hover {
+    background-color: white; /* Цвет фона при наведении */
+    color: black; /* Цвет текста при наведении */
+    border: 2px solid black; /* Цвет обводки при наведении */
+}
+
+.product-rating i{
+    font-size: 15px;
+}
+.rating-p {
+    font-size: 16px;
+}
+
+  @font-face {
+    font-family: 'Montserrat-Black';
+    src: url('fonts/Montserrat-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-SemiBold';
+    src: url('fonts/Montserrat-SemiBold.ttf') format('truetype');
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-ExtraLight';
+    src: url('fonts/Montserrat-ExtraLight.ttf') format('truetype');
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-Medium';
+    src: url('fonts/Montserrat-Medium.ttf') format('truetype');
+    font-style: normal;
+  }
+
+
+  @font-face {
+    font-family: 'Montserrat-Bold';
+    src: url('fonts/Montserrat-Bold.ttf') format('truetype');
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-Light';
+    src: url('fonts/Montserrat-Light.ttf') format('truetype');
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    src: url('fonts/Inter_18pt-Regular.ttf') format('truetype');
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Montserrat-Regular';
+    src: url('fonts/Montserrat-Regular.ttf') format('truetype');
+    font-style: normal;
+  }
+
+.mont-reg{
+    font-family: 'Montserrat-Regular';
+}

@@ -1,0 +1,89 @@
+<div class="modal" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReviewModalLabel">Добавить отзыв о {{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm">
+                    {% csrf_token %}
+                    <div class="rating d-flex justify-content-evenly mb-3">
+                        {% for star in "12345" %}
+                            <i class="fas fa-star star-rating" data-value="{{ forloop.counter }}"></i>
+                        {% endfor %}
+                        <input type="hidden" name="rating" id="ratingInput" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <textarea name="comment" id="comment" class="form-control" rows="4" placeholder="Введите ваш отзыв"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">добавить отзыв</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const stars = document.querySelectorAll(".star-rating");
+        const ratingInput = document.getElementById("ratingInput");
+        const reviewForm = document.getElementById("reviewForm");
+
+        // Добавляем обработчики событий для изменения рейтинга
+        stars.forEach(star => {
+            // Подсветка звезд при наведении
+            star.addEventListener("mouseover", function () {
+                highlightStars(this.getAttribute("data-value"));
+            });
+
+            // Установка рейтинга при клике
+            star.addEventListener("click", function () {
+                const selectedRating = this.getAttribute("data-value");
+                ratingInput.value = selectedRating;
+                highlightStars(selectedRating); // Закрепляем подсветку
+            });
+
+            // Убираем подсветку, если звезда не закреплена
+            star.addEventListener("mouseleave", function () {
+                highlightStars(ratingInput.value);
+            });
+        });
+
+        // Обработчик отправки формы
+        reviewForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch("{% url 'goods:add_review' product.id %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      alert("Ваш отзыв добавлен!");
+                      location.reload();
+                  } else {
+                      alert("Ошибка: " + JSON.stringify(data.errors));
+                  }
+              });
+        });
+
+        // Подсветить звезды до указанного рейтинга
+        function highlightStars(rating) {
+            stars.forEach(star => {
+                if (star.getAttribute("data-value") <= rating) {
+                    star.classList.add("text-warning", "fas"); // Подсвечиваем звезду
+                    star.classList.remove("far"); // Убираем пустую звезду
+                } else {
+                    star.classList.remove("text-warning", "fas"); // Убираем подсветку
+                    star.classList.add("far"); // Ставим пустую звезду
+                }
+            });
+        }
+    });
+</script>
+

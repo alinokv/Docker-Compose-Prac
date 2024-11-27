@@ -2,49 +2,167 @@
 {% load static %}
 
 {% block modal_cart %}
-{% include "includes/cart_button.html" %}
-{% endblock  %}
+    {% include "includes/cart_button.html" %}
+{% endblock %}
+
+{% block css %}
+    <link href="{% static 'deps/css/produtdetail_style.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card mb-4 custom-shadow">
-        <div class="row">
-            <!-- Миниатюры -->
-            <div class="col-md-4">
-                <img src="{{ product.image.url }}"
-                    class="img-thumbnail" data-bs-toggle="modal" data-bs-target="#imageModal1">
-            </div>
-            <div class="col-md-4 ">
-                <p class="product_id mt-3">id: {{ product.display_id }}</p>
-            </div>
-            <!-- Увеличить изображение в модальном окне -->
-            <div class="modal fade" id="imageModal1" tabindex="-1"
-                aria-labelledby="imageModal1Label" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="imageModal1Label">{{ product.name }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Закрыть"></button>
-                        </div>
-                        <div class="modal-body">
-                            <img src="{{ product.image.url }}"
-                                class="img-fluid" alt="Изображение 1">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Описание товара -->
-        <div class="card-body">
-            <p class="card-text">Цена: <strong>{{ product.sell_price }} $</strong></p>
-            <h5 class="card-title">{{ product.name }}</h5>
-            <p class="card-text">{{ product.description }}</p>
-            <a href="{% url "cart:cart_add" %}" class="btn btn-dark add-to-cart"
-            data-product-id="{{ product.id }}">
-            {% csrf_token %}
-            Добавить в корзину</a>
+
+    <div class="promote">
+        <div class="marquee">
+            зарегистрируйтесь на сайте и получите скидку 15%
         </div>
     </div>
-</div>
-{% endblock  %}
+    <div class="d-flex align-items-center fs-5 mt-2">
+        <a href="javascript:history.back()" class="text-black text-decoration-none">
+            <span class="ms-5"><</span>
+            <span class="ms-3">назад</span>
+        </a>
+    </div>
+    <div class="d-flex flex-row justify-content-around mt-2 ms-4 me-4 product-info">
+        <div class="product-pic d-flex flex-column justify-content-center align-items-center">
+            <img src="{{ product.image.url }}" alt="Палетка теней">
+            <p class="m-0">. . .</p>
+        </div>
+
+        <div class="ms-4 me-5">
+            <div class="d-flex flex-row justify-content-between align-items-center me-4">
+                <div>
+                    <p class="mont-bold fs-2 m-0 ">{{ product.name }}</p>
+                    {#                <p class="mont-thin fs-5 m-0">{{ brand.name }}</p>#}
+                    <div class="d-flex mt-2">
+                        <div class="color"></div>
+                        <div class="color  ms-2"></div>
+                        <div class="color ms-2"></div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="product-rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= product.average_rating %}
+                                <i class="fas fa-star"></i> <!-- Полная звезда -->
+                            {% elif forloop.counter == product.average_rating|floatformat:0|add:"1" and product.average_rating|floatformat:"1"|slice:"-1" == "5" %}
+                                <i class="fas fa-star-half-alt"></i> <!-- Половинная звезда -->
+                            {% else %}
+                                <i class="far fa-star"></i> <!-- Пустая звезда -->
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <span class="ms-2 mont-thin">{{ product.review_count }} отзыва(-ов)</span>
+                </div>
+            </div>
+            <p class="mt-2 product-desc">{{ product.description }}
+            </p>
+            <div class="d-flex flex-row justify-content-end align-items-center mt-4">
+                <div class="me-4 price fs-2 d-flex flex-row justify-content-end align-items-center">
+                    <span>{{ product.sell_price }}</span>
+                    <span class="me-5 ms-2">₽</span>
+                    {#                <button class="btn-buy mont-reg">купить</button>#}
+                    {#                <a href="{% url 'cart:cart_add' %}" class="btn-buy mont-reg text-decoration-none" data-product-id="{{ product.id }}">#}
+                    {#                    {% csrf_token %}#}
+                    {#                    купить#}
+                    {#                </a>#}
+                    <a href="{% url 'cart:cart_add' %}" class="btn-buy mont-reg text-decoration-none add-to-cart"
+                       data-product-id="{{ product.id }}">
+                        {% csrf_token %}
+                        купить
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="d-flex flex-row justify-content-start align-items-center ms-4 me-4 mt-2">
+        <div class="d-flex flex-row justify-content-start align-items-center">
+            <p class="mont-bold fs-1">{{ product.average_rating }}</p>
+            <div class="ms-2">
+                <div class="product-rating">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= product.average_rating %}
+                            <i class="fas fa-star"></i> <!-- Полная звезда -->
+                        {% elif forloop.counter == product.average_rating|floatformat:0|add:"1" and product.average_rating|floatformat:"1"|slice:"-1" == "5" %}
+                            <i class="fas fa-star-half-alt"></i> <!-- Половинная звезда -->
+                        {% else %}
+                            <i class="far fa-star"></i> <!-- Пустая звезда -->
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <p class="rating-p mont-reg">оценка товара</p>
+            </div>
+        </div>
+        <div class="d-flex flex-row justify-content-start align-items-center ms-5">
+            <p class="mont-bold fs-1">{{ product.recommendation_percentage }}</p>
+            <span class="mont-bold">%</span>
+            <div class="ms-2">
+                <div>
+                    <p class="rating-p mont-reg mb-0">покупателей</p>
+                    <p class="rating-p mont-reg">рекомендуют</p>
+                </div>
+            </div>
+
+        </div>
+        <button class="btn-review mont-reg text-decoration-none m-0" data-bs-toggle="modal"
+                data-bs-target="#addReviewModal">
+            +
+        </button>
+    </div>
+
+
+    {% include "add_review.html" %}
+    <div class="d-flex justify-content-start">
+        <p class="mont-bold fs-4">Сортировать отзывы по:</p>
+        <div class="ms-4">
+            <a href="?sort_by=newest" class="btn btn-outline-secondary {% if sort_by == 'newest' %}active{% endif %}">Новые</a>
+            <a href="?sort_by=rating_desc" class="btn btn-outline-secondary {% if sort_by == 'rating_desc' %}active{% endif %}">От лучшего к худшему</a>
+            <a href="?sort_by=rating_asc" class="btn btn-outline-secondary {% if sort_by == 'rating_asc' %}active{% endif %}">От худшего к лучшему</a>
+            {% if user.is_authenticated %}
+                <a href="?sort_by=my_reviews"
+                   class="btn btn-outline-secondary {% if sort_by == 'my_reviews' %}active{% endif %}">Мои отзывы</a>
+
+            {% endif %}
+        </div>
+
+    </div>
+
+
+    {% include "goods/_Reviews.html" %}
+
+
+    <style>
+        .color {
+            border-radius: 50%;
+            background-color: #EFD9E0;
+            height: 35px;
+            width: 35px;
+        }
+
+        .review-card img {
+            height: 70px;
+            width: 70px;
+            border-radius: 50%;
+            box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-review {
+            border-radius: 30px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: black;
+            color: whitesmoke;
+            border: 2px solid transparent; /* Обводка по умолчанию */
+            transition: all 0.3s ease; /* Плавный переход */
+        }
+
+        .btn-review:hover {
+            background-color: white; /* Цвет фона при наведении */
+            color: black; /* Цвет текста при наведении */
+            border: 2px solid black; /* Цвет обводки при наведении */
+        }
+    </style>
+
+
+{% endblock %}
